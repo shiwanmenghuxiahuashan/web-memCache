@@ -1,8 +1,15 @@
 {
   "name": "my-webpack-project",
   "version": "1.0.0",
-  "description": "My webpack project",
   "packageManager": "pnpm@9.7.1",
+  "description": "My webpack project",
+  "keywords": [
+    "memcache",
+    "redis",
+    "web"
+  ],
+  "license": "MIT",
+  "author": "lichonglou",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,17 +20,11 @@
     "watch": "webpack --watch",
     "serve": "webpack serve"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "resolutions": {
-    "@element-plus/eslint-config": "^9.11.1",
-    "@typescript-eslint/parser": "^9.11.1"
-  },
   "devDependencies": {
     "@element-plus/eslint-config": "^0.0.20240924",
     "@webpack-cli/generators": "^3.0.7",
-    "eslint": "^9.11.1",
+    "eslint": "^8.18.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.2",

@@ -1,0 +1,7 @@
+src/config
+vue.config.js
+webpack.config.js
+.eslintrc.js
+__doc__
+tests
+/dist

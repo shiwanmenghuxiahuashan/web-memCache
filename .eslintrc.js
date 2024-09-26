@@ -5,6 +5,5 @@ module.exports = {
     expect: 'readonly',
     it: 'readonly',
     test: true
-  },
-  ignores: ['webpack.config.js', '.eslintrc.js', 'tests', '/dist']
+  }
 }
