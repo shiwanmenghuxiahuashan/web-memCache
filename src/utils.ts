@@ -1,7 +1,7 @@
 import qs from 'qs'
 import type { ICacheData, IMemCacheOptions } from './type'
 
-const deepCopy = (obj) => {
+const deepCopy = (obj: object | undefined) => {
   if (obj === null || typeof obj === 'undefined') return obj
 
   try {
@@ -42,14 +42,14 @@ const parseCacheId = (cacheId: string) => {
  */
 const buildCacheData = (
   data: any,
-  options: IMemCacheOptions = {},
+  options: IMemCacheOptions,
   cacheId: string
 ): ICacheData => {
   return {
     cacheId,
     cacheValue: deepCopy(data),
     cacheTime: Date.now(),
-    timeOut: options.timeOut || this.config.timeOut
+    timeOut: options ? options.timeOut : 0
   }
 }
 
@@ -62,20 +62,21 @@ const buildCacheData = (
  * @param {number} cacheData.timeOut - 缓存过期时间
  * @param {object} options 缓存选项
  * @param {number} options.timeOut 单项缓存过期时间
- * @returns {object} cacheData
+ * @returns {object|undefined} cacheData|undefined 缓存数据
  */
 const parseCacheData = (
   type: string,
   cacheData: ICacheData,
   options: IMemCacheOptions
-): ICacheData => {
-  if (!cacheData | !options) return undefined
+): ICacheData | undefined => {
+  if (!cacheData || !options) {
+    throw new Error('cacheData or options is undefined')
+  }
 
   const { timeOut, cacheTime } = cacheData
 
   if (timeOut && Date.now() - cacheTime > timeOut) {
     // 如果缓存过期,则使用cacheKey 移除缓存
-    this.delete(type, options)
     return undefined
   }
 
@@ -87,6 +88,10 @@ const parseCacheData = (
 
 interface Isettings {
   cacheLog: boolean
+}
+const logWarn = (...args: any[]) => {
+  // eslint-disable-next-line no-console
+  console.warn(`[memCache] :`, ...args)
 }
 class Logger {
   private isConsole = true
@@ -111,7 +116,7 @@ class Logger {
   }
 }
 
-const standardErrorMagMapper = {
+const standardErrorMagMapper: { [key: number]: string } = {
   // 1 get
   1001: '获取缓存失败！请传入正确参数',
   // 2 set
@@ -140,18 +145,18 @@ const interfaceParameterVerification = (
   options: IMemCacheOptions
 ) => {
   if (!type || !options) {
-    this.logger.warn('当前 type :', type)
-    this.logger.warn('当前 options :', options)
+    logWarn('当前 type :', type)
+    logWarn('当前 options :', options)
     standardError(1001)
   }
 
   if (!options.cacheKey) {
-    this.logger.warn('当前 options :', options)
+    logWarn('当前 options :', options)
     standardError(5001)
   }
 }
 
-const standardError = (msg: string) => {
+const standardError = (msg: string | number) => {
   if (typeof msg === 'number') {
     msg = standardErrorMagMapper[msg] || '未知错误'
   }

@@ -1,12 +1,17 @@
 {
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "allowSyntheticDefaultImports": true,
-    "noImplicitAny": true,
+    "target": "es6",
     "module": "es6",
-    "target": "es5",
-    "allowJs": true
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "strict": true,
+    "moduleResolution": "node", // 设置模块解析为 node
+    "noImplicitAny": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
   },
   "files": [
     "src/index.ts"

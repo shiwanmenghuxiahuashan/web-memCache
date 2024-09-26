@@ -5,6 +5,7 @@ import {
   buildCacheId,
   interfaceParameterVerification,
   parseCacheData,
+  standardError,
   standardErrorMagMapper
 } from './utils'
 import type {
@@ -34,24 +35,30 @@ class MemCache {
    * @param {object|string} options.cacheKey 缓存key - 字符串直接作为缓存id 对象则根据其生成缓存id
    * @returns
    */
-  __getCache__(type, options: IMemCacheOptions): ICacheData {
+  __getCache__(
+    type: string,
+    options: IMemCacheOptions
+  ): ICacheData | undefined {
     interfaceParameterVerification(type, options)
 
     const cacheMap = this.bucket.get(type)
 
     if (!cacheMap) return undefined
 
-    let cacheData: ICacheData | undefined = cacheMap.get(
+    let cacheData: undefined | ICacheData = cacheMap.get(
       buildCacheId(options.cacheKey)
     )
 
     if (!cacheData) return undefined
 
-    cacheData = parseCacheData(type, cacheData, {
-      ...options,
-      // ??? 如果缓存过期,则使用cacheKey 移除缓存
-      cacheKey: cacheData.cacheId
-    })
+    cacheData = parseCacheData(type, cacheData, options)
+
+    if (cacheData === undefined) {
+      this.logger.log(`"${type}" 缓存已过期 :`, cacheData)
+      // 如果缓存过期,则使用cacheKey 移除缓存
+      this.delete(type, options)
+      return undefined
+    }
 
     return cacheData
   }
@@ -61,9 +68,12 @@ class MemCache {
    * @param type 资源类型 ex:user 或 '/topstory/recommenduser'
    * @returns
    */
-  __deleteRelatedResourceCache__(type: string, options: IDelMemCacheOptions) {
+  __deleteRelatedResourceCache__(
+    type: string,
+    options: IDelMemCacheOptions | undefined
+  ) {
     // 明确指定不删除关联资源缓存 则直接返回
-    if (options.deleteRelatedResource === false) return true
+    if (options && options.deleteRelatedResource === false) return true
 
     const relResourceType: string | string[] | undefined =
       this.config.relatedResourceMapper[type]
@@ -87,14 +97,19 @@ class MemCache {
    * @param {string} type 资源类型 ex:user 或 '/topstory/recommenduser'
    * @param {string} cacheId 数据 id
    */
-  _updateLruQuqueByType(type, cacheId) {
+  _updateLruQuqueByType(type: string, cacheId: string) {
     let lruQuque = this.lruBucket.get(type) || []
 
-    if (lruQuque.length >= this.config.limt) {
+    if (lruQuque.length >= this.config.limit) {
       const tail = lruQuque.pop()
-      this.logger.log(`"${type}" 缓存队列已满，删除尾部缓存 :`, tail)
-      // 删除尾部 数据缓存
-      this.bucket.get(type).delete(tail)
+      if (tail) {
+        const cacheMap = this.bucket.get(type)
+        if (cacheMap) {
+          // 删除尾部 数据缓存
+          cacheMap.delete(tail)
+          this.logger.log(`"${type}" 缓存队列已满，删除尾部缓存 :`, tail)
+        }
+      }
     }
 
     // 如果已经存在 则删除
@@ -113,7 +128,7 @@ class MemCache {
    * @param cacheId
    * @returns
    */
-  _deleteLruQuqueByType(type, cacheId = null) {
+  _deleteLruQuqueByType(type: string, cacheId = null) {
     let lruQuque = this.lruBucket.get(type)
     if (!lruQuque) return
     if (cacheId) {
@@ -140,7 +155,7 @@ class MemCache {
    * ```
    *
    */
-  has(type, options) {
+  has(type: string, options: IMemCacheOptions) {
     const cacheMap = this.bucket.get(type)
 
     if (!cacheMap) return false
@@ -162,7 +177,7 @@ class MemCache {
    *  memCache.get('/topstory/recommenduser',{cacheKey:{page:1,pageSize:10}})
    * ```
    */
-  get(type, options: IMemCacheOptions) {
+  get(type: string, options: IMemCacheOptions) {
     const cacheData: ICacheData | undefined = this.__getCache__(type, options)
 
     // ??? 缓存无效即为 undefined
@@ -170,7 +185,7 @@ class MemCache {
 
     this.logger.log(`命中 "${type}" 缓存 :`, cacheData)
 
-    this._updateLruQuqueByType(type, cacheId)
+    this._updateLruQuqueByType(type, cacheData.cacheId)
 
     return cacheData.cacheValue
   }
@@ -183,7 +198,7 @@ class MemCache {
    * @param {object|boolean|string} data 缓存数据
    * @returns
    */
-  set(type, options: IMemCacheOptions, data) {
+  set(type: string, options: IMemCacheOptions, data: any) {
     interfaceParameterVerification(type, options)
 
     const cacheMap = this.bucket.get(type) || new Map()
@@ -203,7 +218,14 @@ class MemCache {
       return false
     }
 
-    const cacheData = buildCacheData(data, options, cacheId)
+    const cacheData = buildCacheData(
+      data,
+      {
+        ...options,
+        timeOut: options.timeOut || this.config.timeOut
+      },
+      cacheId
+    )
 
     this.logger.log(`设置 "${type}" 缓存 :`, cacheData)
 
@@ -232,13 +254,27 @@ class MemCache {
 
     const { cacheId } = cacheData
 
-    const newCacheData = buildCacheData(data, options, cacheId)
+    const newCacheData = buildCacheData(
+      data,
+      {
+        ...options,
+        timeOut: options.timeOut || this.config.timeOut
+      },
+      cacheId
+    )
 
     this.logger.log(`更新 "${type}" 缓存 :`, newCacheData)
 
     this._updateLruQuqueByType(type, cacheId)
 
-    return this.bucket.get(type).set(cacheId, newCacheData)
+    const cacheMap = this.bucket.get(type)
+
+    if (!cacheMap) {
+      this.logger.error(standardErrorMagMapper[3001], type, options)
+      return false
+    }
+
+    return cacheMap.set(cacheId, newCacheData)
   }
 
   /**
@@ -249,8 +285,8 @@ class MemCache {
    * @param {boolean} options.deleteRelatedResource  是否删除关联资源缓存
    * @returns {boolean}
    */
-  delete(type: string, options: IDelMemCacheOptions) {
-    if (!type || !options) {
+  delete(type: string, options?: IDelMemCacheOptions | undefined) {
+    if (!type) {
       this.logger.warn('当前 type :', type)
       this.logger.warn('当前 options :', options)
       standardError(4001)
@@ -263,7 +299,7 @@ class MemCache {
     if (!cacheMap) return false
 
     // 删除指定缓存
-    if (options.cacheKey) {
+    if (options && options.cacheKey) {
       const cacheId = buildCacheId(options.cacheKey)
       this.logger.log(`删除指定 "${type}" 资源 指定 cacheId 缓存 :`, cacheId)
       this._deleteLruQuqueByType(type, cacheId)
