@@ -8,17 +8,17 @@ interface IDefaultConfig {
    * 按资源缓存最大限制
    * - 默认 10
    */
-  limit: number
+  limit?: number
   /**
    * 缓存过期时间
    * - 默认无过期时间 即 0
    */
-  timeOut: number
+  timeOut?: number
   /**
    * 是否打印缓存日志
    * - 默认打印
    */
-  cacheLog: boolean
+  cacheLog?: boolean
   /**
    * 关联资源映射
    * - ex: { user: 'meta' }
@@ -27,7 +27,7 @@ interface IDefaultConfig {
    * - 例如：当 card 数据存在已读状态 read 时，read 状态更新，触发 post ,删除 card
    * 防止 命中缓存，再次触发 read 状态更新，服务器返回 409 重复创建
    */
-  relatedResourceMapper: Record<string, string | string[]>
+  relatedResourceMapper?: Record<string, string | string[]>
 }
 
 interface IMemCacheOptions {
@@ -36,7 +36,7 @@ interface IMemCacheOptions {
    * - 默认无过期时间 即 0
    * - 只对当前资源缓存有效
    */
-  timeOut: number
+  timeOut?: number
 
   /**
    * 缓存key

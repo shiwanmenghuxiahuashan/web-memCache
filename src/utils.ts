@@ -1,4 +1,4 @@
-import qs from 'qs'
+import * as qs from 'qs'
 import type { ICacheData, IMemCacheOptions } from './type'
 
 const deepCopy = (obj: object | undefined) => {
@@ -20,6 +20,7 @@ const deepCopy = (obj: object | undefined) => {
 const buildCacheId = (cacheKey: object | string) => {
   if (!cacheKey) return 'unknown-cacheKey'
   if (typeof cacheKey === 'string') return cacheKey
+  // @ts-ignore
   return qs.stringify(cacheKey, { arrayFormat: 'comma' })
 }
 
@@ -29,6 +30,7 @@ const buildCacheId = (cacheKey: object | string) => {
  * @returns
  */
 const parseCacheId = (cacheId: string) => {
+  // @ts-ignore
   return qs.parse(cacheId, { arrayFormat: 'comma' })
 }
 
@@ -49,6 +51,7 @@ const buildCacheData = (
     cacheId,
     cacheValue: deepCopy(data),
     cacheTime: Date.now(),
+    // @ts-ignore
     timeOut: options ? options.timeOut : 0
   }
 }
@@ -80,23 +83,17 @@ const parseCacheData = (
     return undefined
   }
 
-  return {
-    ...cacheData,
-    cacheValue: deepCopy(cacheData.cacheValue)
-  }
+  return deepCopy(cacheData)
 }
 
-interface Isettings {
-  cacheLog: boolean
-}
 const logWarn = (...args: any[]) => {
   // eslint-disable-next-line no-console
   console.warn(`[memCache] :`, ...args)
 }
 class Logger {
   private isConsole = true
-  constructor(settings: Isettings = { cacheLog: true }) {
-    this.isConsole = settings.cacheLog
+  constructor(settings: { cacheLog?: boolean }) {
+    this.isConsole = settings?.cacheLog ?? true
   }
 
   log(...args: any[]) {

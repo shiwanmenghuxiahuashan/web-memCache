@@ -1,4 +1,4 @@
-import { mergeConfig } from './setting'
+import { defaultConfig, mergeConfig } from './setting'
 import {
   Logger,
   buildCacheData,
@@ -8,18 +8,18 @@ import {
   standardError,
   standardErrorMagMapper
 } from './utils'
+
 import type {
   ICacheData,
   IDefaultConfig,
   IDelMemCacheOptions,
   IMemCacheOptions
 } from './type'
-
 class MemCache {
   private logger: Logger
   bucket: Map<string, Map<string, ICacheData>>
   lruBucket: Map<string, string[]>
-  config: IDefaultConfig
+  config: IDefaultConfig = {}
 
   constructor(config: IDefaultConfig) {
     this.bucket = new Map()
@@ -74,7 +74,7 @@ class MemCache {
   ) {
     // 明确指定不删除关联资源缓存 则直接返回
     if (options && options.deleteRelatedResource === false) return true
-
+    if (!this.config || !this.config.relatedResourceMapper) return true
     const relResourceType: string | string[] | undefined =
       this.config.relatedResourceMapper[type]
 
@@ -100,15 +100,19 @@ class MemCache {
   _updateLruQuqueByType(type: string, cacheId: string) {
     let lruQuque = this.lruBucket.get(type) || []
 
-    if (lruQuque.length >= this.config.limit) {
+    if (!this.config) return
+
+    let { limit } = this.config
+
+    // ??? limit 为 0 时不限制缓存队列长度
+    if (!limit && limit !== 0) {
+      limit = defaultConfig.limit
+    }
+
+    if (limit && lruQuque.length >= limit) {
       const tail = lruQuque.pop()
-      if (tail) {
-        const cacheMap = this.bucket.get(type)
-        if (cacheMap) {
-          // 删除尾部 数据缓存
-          cacheMap.delete(tail)
-          this.logger.log(`"${type}" 缓存队列已满，删除尾部缓存 :`, tail)
-        }
+      if (tail && this.bucket.get(type)?.delete(tail)) {
+        this.logger.log(`"${type}" 缓存队列已满，删除尾部缓存 :`, tail)
       }
     }
 
@@ -128,7 +132,7 @@ class MemCache {
    * @param cacheId
    * @returns
    */
-  _deleteLruQuqueByType(type: string, cacheId = null) {
+  _deleteLruQuqueByType(type: string, cacheId = '') {
     let lruQuque = this.lruBucket.get(type)
     if (!lruQuque) return
     if (cacheId) {
@@ -222,7 +226,7 @@ class MemCache {
       data,
       {
         ...options,
-        timeOut: options.timeOut || this.config.timeOut
+        timeOut: options.timeOut ?? this.config.timeOut ?? defaultConfig.timeOut
       },
       cacheId
     )
@@ -258,7 +262,7 @@ class MemCache {
       data,
       {
         ...options,
-        timeOut: options.timeOut || this.config.timeOut
+        timeOut: options.timeOut ?? this.config.timeOut ?? defaultConfig.timeOut
       },
       cacheId
     )
