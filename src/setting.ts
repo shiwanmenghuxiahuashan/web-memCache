@@ -1,9 +1,9 @@
-import { DefaultConfig } from './type'
+import type { IDefaultConfig } from './type'
 /**
  * 默认配置
  */
-const defaultConfig: DefaultConfig = {
-  limt: 10,
+const defaultConfig: IDefaultConfig = {
+  limit: 10,
   timeOut: 0,
   cacheLog: true,
   relatedResourceMapper: {}
@@ -14,7 +14,7 @@ const defaultConfig: DefaultConfig = {
  * @param config
  * @returns
  */
-const mergeConfig = (config: DefaultConfig): DefaultConfig => {
+const mergeConfig = (config: IDefaultConfig): IDefaultConfig => {
   return { ...defaultConfig, ...config }
 }
 

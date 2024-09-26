@@ -1,3 +1,5 @@
+type CacheKey = string | Record<string, any>
+
 /**
  * memCache 默认配置
  */
@@ -25,10 +27,8 @@ interface IDefaultConfig {
    * - 例如：当 card 数据存在已读状态 read 时，read 状态更新，触发 post ,删除 card
    * 防止 命中缓存，再次触发 read 状态更新，服务器返回 409 重复创建
    */
-  relatedResourceMapper: Record<string, string>
+  relatedResourceMapper: Record<string, string | string[]>
 }
-
-type CacheKey = string | Record<string, any>
 
 interface IMemCacheOptions {
   /**
@@ -44,14 +44,40 @@ interface IMemCacheOptions {
    * - 对象则根据其生成缓存id
    */
   cacheKey: CacheKey
+}
+
+interface IDelMemCacheOptions {
+  /**
+   * 缓存key
+   * - 字符串直接作为缓存id
+   * - 对象则根据其生成缓存id
+   */
+  cacheKey?: CacheKey
   /**
    * 是否删除关联资源缓存
    * - 默认删除
    * - 例如删除 user 时删除 meta 缓存
    */
-  deleteRelatedResource: boolean
+  deleteRelatedResource?: boolean
 }
 
-type CacheMap = Map<string, any>
+interface ICacheData {
+  /**
+   * 缓存 id
+   */
+  cacheId: string
+  /**
+   * 缓存创建/更新 时间
+   */
+  cacheTime: number
+  /**
+   * 缓存过期时间
+   */
+  timeOut: number
+  /**
+   * 缓存数据
+   */
+  cacheValue: any
+}
 
-export { CacheMap, DefaultConfig, MemCacheOptions }
+export { IDefaultConfig, IMemCacheOptions, IDelMemCacheOptions, ICacheData }
