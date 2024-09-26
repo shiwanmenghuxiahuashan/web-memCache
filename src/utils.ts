@@ -78,7 +78,7 @@ const parseCacheData = (
 
   const { timeOut, cacheTime } = cacheData
 
-  if (timeOut && Date.now() - cacheTime > timeOut) {
+  if (timeOut && Date.now() - cacheTime >= timeOut) {
     // 如果缓存过期,则使用cacheKey 移除缓存
     return undefined
   }
