@@ -1,6 +1,6 @@
 {
   "name": "web-memcache",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "packageManager": "pnpm@9.7.1",
   "description": "web memcache project",
   "keywords": [
@@ -12,7 +12,9 @@
   "author": "lichonglou",
   "main": "./index.js",
   "files": [
-    "dist"
+    "dist",
+    "index.js",
+    "src"
   ],
   "scripts": {
     "test": "jest",
