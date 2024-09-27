@@ -8,6 +8,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     '@element-plus/eslint-config'
   ],
+  plugins: ['@typescript-eslint'], // 添加 @typescript-eslint 插件
   globals: {
     describe: 'readonly',
     expect: 'readonly',

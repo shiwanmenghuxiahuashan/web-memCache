@@ -18,7 +18,9 @@ pnpm add web-memcache
 ### 基础用法  
 
 ```js
-import MemCache from 'web-memcache';
+import {
+    MemCache
+} from 'web-memcache';
 // 创建一个缓存实例
 const memCache = new MemCache();
 /**
@@ -45,7 +47,7 @@ const memCacheOptions = {
  * 缓存数据
  * - 支持缓存对象，数组，字符串，null，布尔 数据类型
  * - 需要注意：判断缓存值是否存在应判断获取的缓存值是否 "不为" undefined, 因为缓存值可以为 null，0，false 等值。
- * - 关于 NaN 值，NaN 与任何值都不相等，包括它自己。这意味着 NaN !== NaN 是 true。
+ * - 关于 NaN 值，NaN 与任何值都不相等，在存入 NaN 会被隐式转换为 null 
  * 要检查一个值是否是 NaN，你可以使用 Number.isNaN()
  */
 const cacheDataValue = {
@@ -257,6 +259,10 @@ interface IDelMemCacheOptions {
     - 实例化 memecache 时 ，传递关系资源映射为 `{'user':'friend'}`,在调用`memcache.delete('user')` 时，会删除 `friend` 资源的缓存数据
     - 传递 `false` 则 **禁用** 删除关联资源缓存数据
 
+## 缓存的数据格式
+
+暂空
+
 ## 关于cacheKey 实际应用
 
 "商品资源"为 `goods` , 前端进行分页请求 ，每次请求10条数据
@@ -343,11 +349,8 @@ memCache.set('goods', {
 ## 注意事项
 
 1. 因为实现方式是基于内存缓存(`new Map()`)， 所以在页面刷新或者关闭页面时， 缓存数据会被清空， 所以在使用时需要注意缓存数据的生命周期。
-2. 缓存数据的更新， 删除， 获取都是基于数据资源类型和缓存选项(`
-cacheKey `)， 所以在使用时需要注意数据资源类型和缓存选项(` cacheKey`) 的唯一性。
-3. 缓存选项`
-cacheKey`
-可以是字符串 或 对象。 如果是字符串， 则直接作为缓存键值， 此时需要注意缓存键值的唯一性。 如果是对象， 注意控制对象大小， 以免生成过长的 cacheId。
+2. 缓存数据的更新， 删除， 获取都是基于数据资源类型和缓存选项(`cacheKey `)， 所以在使用时需要注意数据资源类型和缓存选项(` cacheKey`) 的唯一性。
+3. 缓存数据是通过 `JSON.stringify` 和 `JSON.parse` 进行序列化和反序列化的，所以缓存数据必须是可以序列化的数据类型，如对象，数组，字符串，数字，布尔等。如果包含函数，`undefined`，`NaN`等数据类型，会被忽略。
 
 ## 参考资料
 
