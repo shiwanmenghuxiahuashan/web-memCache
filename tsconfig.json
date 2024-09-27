@@ -3,7 +3,7 @@
     "target": "es6", // 指定 ECMAScript 目标版本
     "module": "es6", // 指定模块代码生成
     "lib": [
-      "es2015",
+      "esnext",
       "dom"
     ],
     "strict": true, // 启用所有严格类型检查选项
@@ -20,7 +20,7 @@
   ],
   "include": [
     "src/**/*",
-    "tests/**/*"
+    // "tests/**/*"
   ],
   "exclude": [
     "node_modules",

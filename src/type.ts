@@ -84,4 +84,10 @@ interface ICacheData {
   cacheValue: any
 }
 
-export { IDefaultConfig, IMemCacheOptions, IDelMemCacheOptions, ICacheData }
+export {
+  CacheKey,
+  IDefaultConfig,
+  IMemCacheOptions,
+  IDelMemCacheOptions,
+  ICacheData
+}

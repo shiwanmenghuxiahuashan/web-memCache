@@ -3,4 +3,4 @@ vue.config.js
 webpack.config.js
 .eslintrc.js
 __doc__
-/dist
+/dist/*

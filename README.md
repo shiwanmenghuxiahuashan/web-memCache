@@ -45,7 +45,8 @@ const memCacheOptions = {
  * 缓存数据
  * - 支持缓存对象，数组，字符串，null，布尔 数据类型
  * - 需要注意：判断缓存值是否存在应判断获取的缓存值是否 "不为" undefined, 因为缓存值可以为 null，0，false 等值。
- * - 关于 NaN 值，NaN 与任何值都不相等，包括它自己。这意味着 NaN !== NaN 是 true。要检查一个值是否是 NaN，你可以使用 Number.isNaN()
+ * - 关于 NaN 值，NaN 与任何值都不相等，包括它自己。这意味着 NaN !== NaN 是 true。
+ * 要检查一个值是否是 NaN，你可以使用 Number.isNaN()
  */
 const cacheDataValue = {
     id: 1,
@@ -339,18 +340,19 @@ memCache.set('goods', {
 
    
 
-# # 注意事项
+## 注意事项
+
 1. 因为实现方式是基于内存缓存(`new Map()`)， 所以在页面刷新或者关闭页面时， 缓存数据会被清空， 所以在使用时需要注意缓存数据的生命周期。
 2. 缓存数据的更新， 删除， 获取都是基于数据资源类型和缓存选项(`
 cacheKey `)， 所以在使用时需要注意数据资源类型和缓存选项(` cacheKey`) 的唯一性。
 3. 缓存选项`
 cacheKey`
-可以是字符串 或 对象。 如果是字符串， 则直接作为缓存键值， 此时需要注意缓存键值的唯一性。 如果是对象， 请最小限度控制对象大小， 以免生成过长的 cacheId。
+可以是字符串 或 对象。 如果是字符串， 则直接作为缓存键值， 此时需要注意缓存键值的唯一性。 如果是对象， 注意控制对象大小， 以免生成过长的 cacheId。
+
+## 参考资料
+
+https://marcobotto.com/blog/compiling-and-bundling-typescript-libraries-with-webpack/
 
 ## Authors
 
 * **lichonglou** - work in beijng
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details

@@ -10,15 +10,19 @@
   ],
   "license": "MIT",
   "author": "lichonglou",
-  "main": "/dist/main.js",
+  "main": "./index.js",
   "scripts": {
     "test": "jest",
     "preinstall": "npx only-allow pnpm",
-    "build": "webpack --mode=production --node-env=production",
+    "build": "pnpm build:prod && pnpm build:cjs",
+    "build:cjs": "npx tsc -m es6 --outDir dist/cjs",
     "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production --node-env=production",
     "watch": "webpack --watch",
     "serve": "webpack serve"
+  },
+  "dependencies": {
+    "qs": "^6.13.0"
   },
   "devDependencies": {
     "@element-plus/eslint-config": "^0.0.20240924",
@@ -37,8 +41,5 @@
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
-  },
-  "dependencies": {
-    "qs": "^6.13.0"
   }
 }

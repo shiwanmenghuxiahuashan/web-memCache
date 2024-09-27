@@ -4,14 +4,30 @@ import { defaultConfig } from '../src/setting'
 
 import { buildCacheId } from '../src/utils'
 
-import type { ICacheData, IDefaultConfig, IMemCacheOptions } from '../src/type'
+import type {
+  CacheKey,
+  ICacheData,
+  IDefaultConfig,
+  IMemCacheOptions
+} from '../src/type'
 
 describe('MemCache', () => {
   let memCache: MemCache
   let config: IDefaultConfig
-
+  let cacheKey: CacheKey
   beforeEach(() => {
     config = { ...defaultConfig }
+    cacheKey = {
+      url: '/user',
+      method: 'GET',
+      page: { offset: 0, limit: 10 },
+      filter: {
+        account: {
+          op: 'neq',
+          value: 'admin'
+        }
+      }
+    }
     memCache = new MemCache(config)
   })
 
@@ -26,18 +42,6 @@ describe('MemCache', () => {
   })
 
   test('对象 cacheKey 构建 cacheId', () => {
-    const cacheKey = {
-      url: '/user',
-      method: 'GET',
-      page: { offset: 0, limit: 10 },
-      filter: {
-        account: {
-          op: 'neq',
-          value: 'admin'
-        }
-      }
-    }
-
     const result = buildCacheId(cacheKey)
 
     // @ts-ignore
@@ -52,20 +56,53 @@ describe('MemCache', () => {
     expect(memCache.config).toEqual(config)
   })
 
-  test('缓存数据 往返 测试', () => {
+  test('数据类型 - 0 测试', () => {
     const type = 'user'
 
-    const cacheKey = {
-      url: '/user',
-      method: 'GET',
-      page: { offset: 0, limit: 10 },
-      filter: {
-        account: {
-          op: 'neq',
-          value: 'admin'
-        }
-      }
-    }
+    const options: IMemCacheOptions = { cacheKey }
+
+    const data = 0
+
+    let result = memCache.set(type, options, data)
+
+    expect(result).toBe(true)
+
+    result = memCache.get(type, options)
+    expect(result).toEqual(data)
+  })
+
+  test('数据类型 - null 测试', () => {
+    const type = 'user'
+
+    const options: IMemCacheOptions = { cacheKey }
+
+    const data = null
+
+    let result = memCache.set(type, options, data)
+
+    expect(result).toBe(true)
+
+    result = memCache.get(type, options)
+    expect(result).toEqual(data)
+  })
+
+  test('数据类型 - false 测试', () => {
+    const type = 'user'
+
+    const options: IMemCacheOptions = { cacheKey }
+
+    const data = false
+
+    let result = memCache.set(type, options, data)
+
+    expect(result).toBe(true)
+
+    result = memCache.get(type, options)
+    expect(result).toEqual(data)
+  })
+
+  test('缓存数据 往返 测试', () => {
+    const type = 'user'
 
     const options: IMemCacheOptions = { cacheKey }
 
@@ -109,18 +146,6 @@ describe('MemCache', () => {
   test('缓存数据更新测试', () => {
     const type = 'user'
 
-    const cacheKey = {
-      url: '/user',
-      method: 'GET',
-      page: { offset: 0, limit: 10 },
-      filter: {
-        account: {
-          op: 'neq',
-          value: 'admin'
-        }
-      }
-    }
-
     const options: IMemCacheOptions = { cacheKey }
 
     const data = { id: 1, name: 'John Doe' }
@@ -138,18 +163,6 @@ describe('MemCache', () => {
   })
 
   test('删除缓存 及关联缓存 测试', () => {
-    const cacheKey = {
-      url: '/user',
-      method: 'GET',
-      page: { offset: 0, limit: 10 },
-      filter: {
-        account: {
-          op: 'neq',
-          value: 'admin'
-        }
-      }
-    }
-
     const options: IMemCacheOptions = { cacheKey }
 
     memCache = new MemCache({
